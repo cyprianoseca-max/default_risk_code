@@ -74,5 +74,29 @@ def run_full_evaluation():
     for k, v in results.items():
         print(f"{k}: {v}")
 
+    # 将动态授信策略表现结果保存为CSV表格，方便写论文使用 (表5-2)
+    table_data = []
+    strategy_names = {
+        "Conservative": "保守策略",
+        "Rule-based": "规则策略",
+        "RL-PPO": "PPO策略"
+    }
+    
+    for key, name in strategy_names.items():
+        if key in results:
+            table_data.append({
+                "策略": name,
+                "平均累计奖励": results[key]["total_reward"],
+                "平均利息收益": results[key]["total_interest_income"],
+                "平均违约损失": results[key]["total_default_loss"],
+                "净收益": results[key]["total_reward"]  # 在代码逻辑中，total_reward 即代表净收益 (利息 - 损失 - 成本)
+            })
+            
+    df_table = pd.DataFrame(table_data)
+    csv_path = os.path.join(CONFIG["results_path"], "strategy_evaluation_table_5_2.csv")
+    df_table.to_csv(csv_path, index=False, encoding="utf-8")
+    print(f"\n表 5-2 动态授信策略表现对比表 数据已保存至: {csv_path}")
+    print(df_table)
+
     plot_strategy_comparison(results, os.path.join(CONFIG["results_path"], "strategy_comparison.png"))
     print("策略对比图已保存。")
